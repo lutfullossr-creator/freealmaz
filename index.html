@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Free Almaz</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#0d0f14;--card:#151922;--line:#252b3a;--y:#ffc21a;--t:#f2f4f8;--m:#8a93a6}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--t);font:600 15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+#app{max-width:480px;margin:auto;height:100%;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 6px}
+.who span{display:block;font-size:12px;color:var(--m);font-weight:600}.who b{display:block;font-size:18px;font-weight:800;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ic{width:38px;height:38px;border:0;border-radius:12px;background:var(--card);color:var(--t);display:grid;place-items:center}
+.ic svg{width:20px;height:20px}
+main{flex:1;overflow-y:auto;padding:8px 16px 20px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.pg{display:none}.pg.on{display:block;animation:in .25s}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px}
+.lb{font-size:12px;color:var(--m);font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.sm{font-size:13px;color:var(--m);font-weight:500}
+.bal{text-align:center;padding:26px 18px}
+.big{display:flex;align-items:center;justify-content:center;gap:10px;font-size:48px;font-weight:900;color:var(--y);margin-top:6px}
+.big svg{width:44px;height:44px}
+.btn{width:100%;border:0;border-radius:14px;padding:15px;font:800 15px system-ui,sans-serif;background:var(--y);color:#161000;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
+.btn:active{transform:scale(.97)}.btn:disabled{background:var(--line);color:#6b7488}
+.btn.o{background:transparent;color:var(--t);border:1px solid var(--line)}
+.btn svg{width:18px;height:18px}
+.gap{height:10px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0}
+.day{background:#0f121a;border:1px solid var(--line);border-radius:10px;padding:8px 0;text-align:center;font-size:11px;color:var(--m)}
+.day b{display:block;font-size:13px;color:var(--t);margin-top:2px}
+.day.ok{background:var(--y);border-color:var(--y);color:#161000}.day.ok b{color:#161000}
+.day.cur{border-color:var(--y)}
+.wh{position:relative;width:240px;height:240px;margin:16px auto}
+.wh #wheel{width:100%;height:100%;display:block}
+#wheel{transition:transform 4.2s cubic-bezier(.12,.7,.1,1)}
+.wh .ptr{position:absolute;left:50%;top:-8px;width:22px;height:26px;transform:translateX(-50%);z-index:2;filter:drop-shadow(0 2px 4px #0008)}
+.link{background:#0f121a;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;font-size:13px;font-weight:500;color:var(--t);word-break:break-all}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.stats .card{margin:0;text-align:center}.stats b{display:block;font-size:26px;color:var(--y);margin-top:2px}
+.rule{display:flex;align-items:center;gap:12px;margin-bottom:4px}.rule svg{width:34px;height:34px;flex:none}.rule b{font-size:18px}
+input{width:100%;background:#0f121a;border:1px solid var(--line);border-radius:12px;color:var(--t);padding:14px;font:600 16px system-ui;margin:12px 0;outline:0;user-select:text;-webkit-user-select:text}input:focus{border-color:var(--y)}
+.chips{display:flex;gap:8px;margin-bottom:14px}.chip{flex:1;text-align:center;padding:12px 0;border-radius:12px;background:#0f121a;border:1px solid var(--line);font-weight:800}.chip.on{border-color:var(--y);color:var(--y)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}.row:last-child{border:0;padding-bottom:0}.row:first-child{padding-top:0}
+.row span:last-child{font-weight:800;white-space:nowrap}.pl{color:#4ade80}.mn{color:#f87171}
+.link-btn{background:none;border:0;color:var(--m);font:600 12px system-ui;margin:6px auto 0;display:block;text-decoration:underline}
+.req{margin-top:14px}.req .h{display:flex;justify-content:space-between;font-size:13px;color:var(--m)}.req b{color:var(--t)}
+.pb{height:6px;background:#0f121a;border-radius:3px;overflow:hidden;margin-top:6px}.pb i{display:block;height:100%;width:0;background:var(--y);transition:width .4s}
+.tb{border:0;border-radius:10px;background:var(--y);color:#161000;font:800 13px system-ui,sans-serif;padding:10px 14px;min-width:98px;transition:transform .1s}.tb:active{transform:scale(.96)}.tb:disabled{background:var(--line);color:#6b7488}
+nav{display:flex;background:var(--bg);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:0;border:0;color:var(--m);padding:10px 0 8px;font:700 11px system-ui;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .2s}
+nav button svg{width:24px;height:24px}nav button.on{color:var(--y)}
+.toast{position:fixed;left:50%;top:64px;transform:translate(-50%,-20px);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-size:14px;opacity:0;transition:.25s;z-index:20;pointer-events:none}.toast.on{opacity:1;transform:translate(-50%,0)}
+.pop{position:fixed;inset:0;background:#000c;display:none;place-items:center;z-index:15;padding:20px}.pop.on{display:grid}
+.pop>div{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 36px;text-align:center;width:100%;max-width:300px;animation:zoom .35s cubic-bezier(.3,1.5,.5,1)}
+@keyframes zoom{from{transform:scale(.8);opacity:0}}
+.pop .big{font-size:56px;margin:8px 0 20px}.pop p:empty{display:none}.pop p{margin:-10px 0 20px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<linearGradient id="dg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8ff3ff"/><stop offset="1" stop-color="#2a7bff"/></linearGradient>
+<symbol id="dm" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z" fill="url(#dg)"/><path d="M2 9h20M9 3l-2 6 5 12 5-12-2-6" fill="none" stroke="#fff" stroke-opacity=".55"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z" fill="currentColor"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><path d="M1 21c0-5 3.5-7 8-7s8 2 8 7zM17 4a4 4 0 010 8 6 6 0 013 4 10 10 0 013 5h-4c0-3-1-5-3-6" fill="currentColor"/></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 6h16v3h2v10H3zm0-2h14v1H3z" fill="currentColor"/><circle cx="17" cy="14" r="1.6" fill="#0d0f14"/></symbol>
+<symbol id="i-task" viewBox="0 0 24 24"><path d="M5 3h14v18H5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 9l1.8 1.8L14 7.5M8.5 16h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><path d="M8 3h12v14H8zM4 7h2v14h12v2H4z" fill="currentColor"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M2 12L22 3l-4 18-6-5-3 4v-6l9-8-11 7z" fill="currentColor"/></symbol>
+<symbol id="i-on" viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3zM16 8a5 5 0 010 8M18.5 5a9 9 0 010 14" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+<symbol id="i-off" viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3zM16 9l5 6M21 9l-5 6" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</defs></svg>
+
+<div id="app">
+<header><div class="who"><span>Salom</span><b id="nm"></b></div><button class="ic" id="snd" aria-label="Ovoz"><svg><use id="sndi" href="#i-on"/></svg></button></header>
+<main>
+<section class="pg on" id="p-home">
+  <div class="card bal"><div class="lb">Balans</div><div class="big"><svg><use href="#dm"/></svg><span id="bal">0</span></div></div>
+  <div class="card">
+    <div class="lb">Kunlik bonus</div>
+    <div class="days" id="days"></div>
+    <button class="btn" id="claim">Bonusni olish</button>
+  </div>
+  <div class="card">
+    <div class="lb">Omad g'ildiragi</div>
+    <div class="wh">
+      <svg class="ptr" viewBox="0 0 22 26"><path d="M11 26L1 4Q11-2 21 4z" fill="#ffc21a"/></svg>
+      <svg id="wheel" viewBox="-100 -100 200 200"></svg>
+    </div>
+    <button class="btn" id="spin">Aylantirish</button>
+    <div class="sm" id="spinInfo" style="text-align:center;margin-top:10px;min-height:20px"></div>
+  </div>
+</section>
+
+<section class="pg" id="p-tasks"><div class="card"><div class="lb" style="margin-bottom:12px">Vazifalar</div><div id="tl"></div></div></section>
+
+<section class="pg" id="p-friends">
+  <div class="card">
+    <div class="rule"><svg><use href="#dm"/></svg><div><b>+22 almaz</b><div class="sm">har bir do'st uchun</div></div></div>
+    <div class="link" id="lk"></div>
+    <button class="btn" id="share"><svg><use href="#i-send"/></svg>Do'stlarga yuborish</button>
+    <div class="gap"></div>
+    <button class="btn o" id="copy"><svg><use href="#i-copy"/></svg>Havolani nusxalash</button>
+  </div>
+  <div class="stats"><div class="card"><div class="lb">Do'stlar</div><b id="fc">0</b></div><div class="card"><div class="lb">Topilgan</div><b id="fe">0</b></div></div>
+</section>
+
+<section class="pg" id="p-wallet">
+  <div class="card">
+    <div class="lb">Almaz yechish</div>
+    <div class="req"><div class="h"><span>Almaz</span><b id="rq1"></b></div><div class="pb"><i id="pb1"></i></div></div>
+    <div class="req"><div class="h"><span>Do'stlar</span><b id="rq2"></b></div><div class="pb"><i id="pb2"></i></div></div>
+    <input id="ffid" inputmode="numeric" placeholder="Free Fire ID" maxlength="14">
+    <div class="chips" id="chips"></div>
+    <button class="btn" id="wd">So'rov yuborish</button>
+    <div class="sm" id="wdinfo" style="margin-top:10px;text-align:center;min-height:20px"></div>
+  </div>
+  <div class="card"><div class="lb" style="margin-bottom:12px">Tarix</div><div id="hist"></div></div>
+</section>
+</main>
+
+<nav>
+  <button class="on" data-go="home"><svg><use href="#i-home"/></svg>Asosiy</button>
+  <button data-go="tasks"><svg><use href="#i-task"/></svg>Vazifalar</button>
+  <button data-go="friends"><svg><use href="#i-users"/></svg>Do'stlar</button>
+  <button data-go="wallet"><svg><use href="#i-wallet"/></svg>Yechish</button>
+</nav>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="pop" id="pop"><div><div class="lb" id="pt"></div><div class="big"><svg><use href="#dm"/></svg><span id="pv"></span></div><p class="sm" id="ps"></p><button class="btn" id="pk">Olish</button></div></div>
+
+<script>
+/* ===== SOZLAMALAR (server yuboradi; bu yerda faqat zaxira) ===== */
+const CFG={BOT:"",REF:22,MIN_REFS:15,MIN:[110,220,583],DAYS:[5,10,15,20,30,40,100],SPIN:[1,2,3,5,10,15,25,50],SPIN_CD:6*3600e3,WELCOME:10,TASKS:[]};
+
+const tg=window.Telegram&&Telegram.WebApp;
+if(tg){tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor("#0d0f14");tg.setBackgroundColor&&tg.setBackgroundColor("#0d0f14")}
+const $=id=>document.getElementById(id),$$=s=>[...document.querySelectorAll(s)];
+const tu=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;
+const UI=(()=>{try{return JSON.parse(localStorage.getItem("fa_ui"))||{}}catch(e){return{}}})();
+let S={bal:0,refs:0,streak:0,lastDay:0,spinAt:0,tasks:{},hist:[],id:0,snd:UI.snd!==false,tab:UI.tab,ff:UI.ff||""};
+const save=()=>localStorage.setItem("fa_ui",JSON.stringify({snd:S.snd,tab:S.tab,ff:S.ff}));
+
+/* ===== SERVER ===== */
+let off=0,ready=false,spinning=false,busy=false,sel=0;const busyT={},now=()=>Date.now()+off;
+const DEVID=localStorage.fa_dev||(localStorage.fa_dev=String(Math.floor(1e6+Math.random()*9e6)));
+async function api(p,b){let r;try{r=await fetch("/api/"+p,{method:"POST",headers:{"Content-Type":"application/json","X-Init":(tg&&tg.initData)||"","X-Dev":DEVID},body:JSON.stringify(b||{})})}catch(e){throw new Error("Aloqa yo'q")}
+  let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.e||"Server xatosi");return j}
+async function act(f){if(busy)return;busy=true;try{await f()}catch(e){sErr();toast(e.message)}busy=false}
+function setS(n){const r0=S.refs,wait=S.hist.filter(h=>h.st==="wait").map(h=>h.id);off=n.now-Date.now();const{now:_,...d}=n;Object.assign(S,d);
+  if(ready){if(S.refs>r0)setTimeout(()=>popup((S.refs-r0)*CFG.REF,"Yangi do'st"),300);
+    wait.forEach(id=>{const h=S.hist.find(x=>x.id===id);if(h&&h.st==="ok"){toast("So'rov tasdiqlandi");sWin()}else if(h&&h.st==="no"){toast("So'rov rad etildi");sErr()}})}
+  ready=true}
+const refresh=()=>{if(!document.hidden&&!spinning&&!busy)api("me").then(j=>{setS(j.s);render()}).catch(()=>{})};
+
+/* ===== OVOZ ===== */
+let AC;function tone(f,d=.12,t="square",v=.07,w=0){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+w;o.type=t;o.frequency.setValueAtTime(f,s);g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d)}catch(e){}}
+const sClick=()=>{tone(520,.06);tone(780,.07,"square",.05,.05)};
+const sWin=()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,.18,"triangle",.11,i*.09));
+const sErr=()=>tone(180,.2,"sawtooth",.09);
+const sTick=()=>tone(900,.03,"square",.035);
+const vib=()=>{try{tg&&tg.HapticFeedback?tg.HapticFeedback.impactOccurred("medium"):navigator.vibrate&&navigator.vibrate(30)}catch(e){}};
+
+/* ===== UI ===== */
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2200)}
+function popup(v,t){$("pv").textContent="+"+v;$("pt").textContent=t;$("ps").textContent="";$("pop").classList.add("on");sWin();vib()}
+$("pk").onclick=()=>$("pop").classList.remove("on");
+$("pop").onclick=e=>{if(e.target===$("pop"))$("pop").classList.remove("on")};
+let shown=0;function count(){const to=S.bal,st=shown,t0=performance.now();if(st===to)return;(function f(n){const p=Math.min(1,(n-t0)/600);shown=Math.round(st+(to-st)*p);$("bal").textContent=shown;if(p<1)requestAnimationFrame(f)})(t0)}
+const fmt=ms=>{const s=Math.ceil(ms/1e3),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h} soat ${m} daqiqa`:`${m} daqiqa ${s%60} soniya`};
+const hm=t=>{const d=new Date(t),p=n=>String(n).padStart(2,"0");return p(d.getDate())+"."+p(d.getMonth()+1)+" "+p(d.getHours())+":"+p(d.getMinutes())};
+const link=()=>`https://t.me/${CFG.BOT}?startapp=ref_${S.id}`;
+const dayN=t=>Math.floor((t+5*36e5)/864e5); // UTC+5
+function dState(){const t=dayN(now());if(S.lastDay===t)return{done:true,c:((S.streak-1)%7)+1};return{done:false,c:S.lastDay&&S.lastDay!==t-1?0:S.streak%7}}
+function tick(){const left=S.spinAt+CFG.SPIN_CD-now();$("spin").disabled=left>0||spinning;$("spinInfo").textContent=left>0?"Keyingi: "+fmt(left):"";if($("claim").disabled&&!dState().done)render()}
+
+function render(){
+  count();$("sndi").setAttribute("href",S.snd?"#i-on":"#i-off");$("nm").textContent=(tu&&(tu.first_name||tu.username))||"o'yinchi";
+  const d=dState();
+  $("days").innerHTML=CFG.DAYS.map((v,i)=>`<div class="day ${i<d.c?"ok":""} ${i===d.c&&!d.done?"cur":""}">${i+1}<b>${v}</b></div>`).join("");
+  $("claim").disabled=d.done;$("claim").textContent=d.done?"Ertaga qaytib keling":"Bonusni olish";
+  $("fc").textContent=S.refs;$("fe").textContent=S.refs*CFG.REF;$("lk").textContent=link();
+  $("chips").innerHTML=CFG.MIN.map((m,i)=>`<div class="chip ${i===sel?"on":""}" data-i="${i}">${m}</div>`).join("");
+  $$(".chip").forEach(c=>c.onclick=()=>{sel=+c.dataset.i;sClick();render()});
+  const m=CFG.MIN[sel],R=CFG.MIN_REFS;
+  $("rq1").textContent=Math.min(S.bal,m)+" / "+m;$("pb1").style.width=Math.min(100,S.bal/m*100)+"%";
+  $("rq2").textContent=Math.min(S.refs,R)+" / "+R;$("pb2").style.width=Math.min(100,S.refs/R*100)+"%";
+  $("wd").disabled=S.bal<m||S.refs<R;
+  $("wdinfo").textContent=S.refs<R?"Yana "+(R-S.refs)+" do'st kerak":S.bal<m?"Yana "+(m-S.bal)+" almaz kerak":"";
+  $("tl").innerHTML=CFG.TASKS.map(k=>{const dn=S.tasks[k.id],bz=busyT[k.id],lk=k.ref&&S.refs<k.ref;return `<div class="row"><div>${k.t}<div class="sm" style="font-size:12px">+${k.r} almaz</div></div><button class="tb" data-t="${k.id}" ${dn||bz||lk?"disabled":""}>${dn?"Bajarildi":bz?"Kuting":lk?S.refs+" / "+k.ref:k.ref?"Olish":"Boshlash"}</button></div>`}).join("");
+  $$(".tb").forEach(b=>b.onclick=()=>doTask(b.dataset.t));
+  $("hist").innerHTML=S.hist.length?S.hist.slice(0,15).map(h=>`<div class="row"><div>${h.txt}<div class="sm" style="font-size:12px">${hm(h.time)}${h.st?" · "+({wait:"Kutilmoqda",ok:"Tasdiqlandi",no:"Rad etildi"})[h.st]:""}</div></div><span class="${h.t==="+"?"pl":"mn"}">${h.t}${h.amt}</span></div>`).join(""):'<div class="sm">Hozircha bo\'sh</div>';
+  tick();
+}
+function go(p,q){$$(".pg").forEach(e=>e.classList.toggle("on",e.id==="p-"+p));$$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===p));S.tab=p;save();document.querySelector("main").scrollTop=0;if(!q)sClick();render()}
+$$("nav button").forEach(b=>b.onclick=()=>go(b.dataset.go));
+$("snd").onclick=()=>{S.snd=!S.snd;save();sClick();render()};
+document.addEventListener("click",e=>{if(e.target.closest(".btn"))sClick()},true);
+
+/* ===== G'ILDIRAK ===== */
+function buildWheel(){const n=8,a=360/n,P=(r,d)=>[(r*Math.sin(d*Math.PI/180)).toFixed(2),(-r*Math.cos(d*Math.PI/180)).toFixed(2)];let h="";
+  for(let i=0;i<n;i++){const[x1,y1]=P(96,i*a),[x2,y2]=P(96,(i+1)*a),m=i*a+a/2,[tx,ty]=P(68,m);
+    h+=`<path d="M0 0L${x1} ${y1}A96 96 0 0 1 ${x2} ${y2}z" fill="${i%2?"#1b2030":"#232a3c"}"/><text transform="translate(${tx} ${ty}) rotate(${m})" text-anchor="middle" dominant-baseline="middle" font-size="18" font-weight="800" fill="${CFG.SPIN[i]>=25?"#ffc21a":"#f2f4f8"}">${CFG.SPIN[i]}</text>`}
+  $("wheel").innerHTML=h+'<circle r="97" fill="none" stroke="#ffc21a" stroke-width="3"/><circle r="12" fill="#0d0f14" stroke="#ffc21a" stroke-width="3"/>'}
+let rot=0;
+$("spin").onclick=()=>act(async()=>{
+  if(S.spinAt+CFG.SPIN_CD>now())return sErr();
+  const r=await api("spin");spinning=true;$("spin").disabled=true;
+  rot+=360*6+((360-(r.i*45+22.5))-(rot%360)+360)%360;$("wheel").style.transform=`rotate(${rot}deg)`;
+  let k=0;const tk=setInterval(()=>{sTick();if(++k>26)clearInterval(tk)},120);
+  await new Promise(z=>setTimeout(z,4300));
+  spinning=false;setS(r.s);popup(r.v,"G'ildirak");render()});
+
+/* ===== KUNLIK BONUS ===== */
+$("claim").onclick=()=>act(async()=>{if(dState().done)return sErr();const r=await api("claim");setS(r.s);popup(r.v,"Kunlik bonus · "+r.day+"-kun");render()});
+
+/* ===== VAZIFALAR ===== */
+function doTask(id){const k=CFG.TASKS.find(x=>x.id===id);if(!k||S.tasks[id]||busyT[id])return;
+  if(k.ref&&S.refs<k.ref){sErr();return toast(S.refs+" / "+k.ref+" do'st")}
+  busyT[id]=1;
+  const fin=async()=>{try{const r=await api("task",{id});setS(r.s);popup(r.v,"Vazifa bajarildi")}catch(e){sErr();toast(e.message)}delete busyT[id];render()};
+  if(k.url){tg?tg.openTelegramLink(k.url):window.open(k.url,"_blank");render();setTimeout(fin,5000)}
+  else if(k.share){shareIt();render();setTimeout(fin,3000)}
+  else{render();fin()}}
+
+/* ===== DO'STLAR ===== */
+$("copy").onclick=()=>{const l=link();(navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).catch(()=>{const t=document.createElement("textarea");t.value=l;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()});toast("Nusxalandi")};
+const shareIt=()=>{const u="https://t.me/share/url?url="+encodeURIComponent(link())+"&text="+encodeURIComponent("Free Fire uchun almaz yig'ing:");tg?tg.openTelegramLink(u):window.open(u,"_blank")};
+$("share").onclick=shareIt;
+
+/* ===== YECHISH ===== */
+$("wd").onclick=()=>act(async()=>{const id=$("ffid").value.trim(),m=CFG.MIN[sel];
+  if(S.hist.some(h=>h.st==="wait")){sErr();return toast("Oldingi so'rov kutilmoqda")}
+  if(S.refs<CFG.MIN_REFS||S.bal<m)return sErr();
+  if(!/^\d{6,14}$/.test(id)){sErr();return toast("Free Fire ID noto'g'ri")}
+  const r=await api("withdraw",{ff:id,amount:m});S.ff=id;save();setS(r.s);render();sWin();vib();toast("So'rov yuborildi")});
+$("ffid").value=S.ff;$("ffid").oninput=e=>{S.ff=e.target.value;save()};
+
+/* ===== BOSHLASH ===== */
+document.addEventListener("visibilitychange",refresh);setInterval(refresh,15000);setInterval(()=>{if(!spinning)tick()},1000);
+(async()=>{
+  $("app").style.opacity=0;$("app").style.transition="opacity .3s";
+  try{const j=await api("me",{ref:new URLSearchParams(location.search).get("ref")||""});Object.assign(CFG,j.cfg);setS(j.s);
+    if(S.tab&&S.tab!=="home")go(S.tab,1);buildWheel();render();if(j.fresh)setTimeout(()=>popup(CFG.WELCOME,"Xush kelibsiz"),500)}
+  catch(e){buildWheel();render();toast(e.message)}
+  $("app").style.opacity=1;
+})();
+</script>
+</body>
+</html>

@@ -1,13 +1,13 @@
 /* FreeAlmaz server — Node 18+, paketsiz (npm install kerak emas)
    Ishga tushirish:
      BOT_TOKEN=123:ABC BASE_URL=https://sizning-domen.uz CHANNEL=@kanal node server.js
-   Bepul hostda (Render) baza yo'qolmasligi uchun Firebase ulang: FIREBASE_URL va FIREBASE_KEY (xizmat akkaunti JSON)
+   Bepul hostda (Render) baza yo'qolmasligi uchun Upstash Redis ulang: UPSTASH_URL va UPSTASH_TOKEN (kartasiz, bepul)
    Lokal sinash (Telegramsiz):  DEV=1 node server.js  ->  http://localhost:3000
    index.html shu papkada bo'lsin. Admin botga bir marta /start bosishi shart. */
 const http=require("http"),fs=require("fs"),path=require("path"),crypto=require("crypto");
 const E=process.env,TOKEN=E.BOT_TOKEN||"",ADMIN=+(E.ADMIN_ID||7692226666),PORT=+(E.PORT||3000);
 const BASE=(E.BASE_URL||"").replace(/\/$/,""),CH=E.CHANNEL||"",DEV=E.DEV==="1";let BOT=E.BOT_USERNAME||"";
-const FB=(E.FIREBASE_URL||"").replace(/\/$/,""),WH=crypto.createHash("sha256").update(TOKEN||"x").digest("hex").slice(0,24);
+const UP=(E.UPSTASH_URL||"").replace(/\/$/,""),UT=E.UPSTASH_TOKEN||"",WH=crypto.createHash("sha256").update(TOKEN||"x").digest("hex").slice(0,24);
 
 const CFG={REF:22,MIN_REFS:15,MIN:[110,220,583],DAYS:[5,10,15,20,30,40,100],SPIN:[1,2,3,5,10,15,25,50],W:[30,25,20,10,7,5,2,1],SPIN_CD:6*3600e3,WELCOME:10,
   TASKS:[...(CH?[{id:"ch",t:"Kanalga a'zo bo'ling",r:10,url:"https://t.me/"+CH.replace("@",""),chat:CH}]:[]),
@@ -15,22 +15,26 @@ const CFG={REF:22,MIN_REFS:15,MIN:[110,220,583],DAYS:[5,10,15,20,30,40,100],SPIN
     {id:"r3",t:"3 ta do'st taklif qiling",r:15,ref:3},
     {id:"r10",t:"10 ta do'st taklif qiling",r:50,ref:10}]};
 
-/* ===== BAZA (db.json) ===== */
-const DBF=path.join(__dirname,"db.json");let db={users:{},wd:{},n:0},st,tokC={t:"",e:0};
-async function fbHdr(){if(!E.FIREBASE_KEY)return{};if(Date.now()>tokC.e){const sa=JSON.parse(E.FIREBASE_KEY),b64=o=>Buffer.from(JSON.stringify(o)).toString("base64url"),iat=Math.floor(Date.now()/1e3);
-  const j=b64({alg:"RS256",typ:"JWT"})+"."+b64({iss:sa.client_email,scope:"https://www.googleapis.com/auth/firebase.database https://www.googleapis.com/auth/userinfo.email",aud:"https://oauth2.googleapis.com/token",iat,exp:iat+3600});
-  const r=await(await fetch("https://oauth2.googleapis.com/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion="+j+"."+crypto.createSign("RSA-SHA256").update(j).sign(sa.private_key,"base64url")})).json();
-  tokC={t:r.access_token,e:Date.now()+3.3e6}}return{Authorization:"Bearer "+tokC.t}}
-async function load(){let j=null;
-  try{if(FB){const r=await fetch(FB+"/db.json",{headers:await fbHdr()});if(!r.ok)throw new Error("Firebase "+r.status);j=await r.json()}else j=JSON.parse(fs.readFileSync(DBF,"utf8"))}
-  catch(e){if(FB){console.error("Baza yuklanmadi:",e.message);process.exit(1)}}
-  if(j)db=j;db.users=db.users||{};db.wd=db.wd||{};db.n=db.n||0; // Firebase bo'sh obyektlarni saqlamaydi
+/* ===== BAZA: Upstash Redis (hostda) yoki db.json (lokal) ===== */
+const DBF=path.join(__dirname,"db.json");let db={users:{},wd:{},n:0},st;const dU=new Set(),dW=new Set();
+const up=async(c,p="")=>{const r=await fetch(UP+p,{method:"POST",headers:{Authorization:"Bearer "+UT,"Content-Type":"application/json"},body:JSON.stringify(c)});if(!r.ok)throw new Error("Upstash "+r.status);return r.json()};
+const hall=async k=>{const a=(await up(["HGETALL",k])).result||[],o={};for(let i=0;i<a.length;i+=2)o[a[i]]=JSON.parse(a[i+1]);return o};
+async function load(){
+  try{if(UP){db.users=await hall("fa:u");db.wd=await hall("fa:w");db.n=+((await up(["GET","fa:n"])).result||0)}else db=JSON.parse(fs.readFileSync(DBF,"utf8"))}
+  catch(e){if(UP){console.error("Baza yuklanmadi:",e.message);process.exit(1)}}
+  db.users=db.users||{};db.wd=db.wd||{};db.n=db.n||0;
   for(const u of Object.values(db.users)){u.tasks=u.tasks||{};u.hist=u.hist||[]}}
-async function persist(){try{if(FB){const r=await fetch(FB+"/db.json",{method:"PUT",headers:await fbHdr(),body:JSON.stringify(db)});if(!r.ok)console.error("Saqlanmadi: Firebase",r.status)}
-  else fs.writeFile(DBF+".tmp",JSON.stringify(db),()=>fs.rename(DBF+".tmp",DBF,()=>{}))}catch(e){console.error("Saqlanmadi:",e.message)}}
-const save=()=>{clearTimeout(st);st=setTimeout(persist,300)};
+async function persist(){
+  if(!UP){try{fs.writeFile(DBF+".tmp",JSON.stringify(db),()=>fs.rename(DBF+".tmp",DBF,()=>{}))}catch(e){console.error("Saqlanmadi:",e.message)}return}
+  const U=[...dU],W=[...dW];dU.clear();dW.clear();
+  try{const c=[["SET","fa:n",String(db.n)]];
+    U.forEach(id=>db.users[id]&&c.push(["HSET","fa:u",String(id),JSON.stringify(db.users[id])]));
+    W.forEach(id=>db.wd[id]&&c.push(["HSET","fa:w",id,JSON.stringify(db.wd[id])]));
+    const rs=await up(c,"/pipeline"),bad=rs.find(x=>x.error);if(bad)throw new Error(bad.error)}
+  catch(e){console.error("Saqlanmadi:",e.message);U.forEach(x=>dU.add(x));W.forEach(x=>dW.add(x));setTimeout(save,5000)}}
+const save=()=>{clearTimeout(st);st=setTimeout(persist,1000)};
 const day=t=>Math.floor((t+5*36e5)/864e5); // UTC+5
-const push=(u,t,txt,amt,x)=>{u.hist.unshift({t,txt,amt,time:Date.now(),...x});u.hist.length=Math.min(u.hist.length,30)};
+const push=(u,t,txt,amt,x)=>{dU.add(u.id);u.hist.unshift({t,txt,amt,time:Date.now(),...x});u.hist.length=Math.min(u.hist.length,30)};
 const pub=u=>({id:u.id,bal:u.bal,refs:u.refs,streak:u.streak,lastDay:u.lastDay,spinAt:u.spinAt,tasks:u.tasks,hist:u.hist,now:Date.now()});
 const pubCfg=()=>{const{W,TASKS,...r}=CFG;return{...r,BOT,TASKS:TASKS.map(({chat,...k})=>k)}};
 
@@ -68,7 +72,7 @@ const H={
     if(k.ref&&u.refs<k.ref)throw u.refs+" / "+k.ref+" do'st";
     u.tasks[k.id]=1;
     if(k.chat){const r=await tgApi("getChatMember",{chat_id:k.chat,user_id:u.id});
-      if(!r.ok||!["member","administrator","creator"].includes(r.result.status)){delete u.tasks[k.id];throw"Avval kanalga a'zo bo'ling"}}
+      if(!r.ok||!["member","administrator","creator"].includes(r.result.status)){delete u.tasks[k.id];dU.add(u.id);throw"Avval kanalga a'zo bo'ling"}}
     u.bal+=k.r;push(u,"+",k.t,k.r);save();return{v:k.r,s:pub(u)}},
   withdraw:async(a,b)=>{const[u]=user(a),m=+b.amount,ff=String(b.ff||"").trim();
     if(!/^\d{6,14}$/.test(ff))throw"Free Fire ID noto'g'ri";if(!CFG.MIN.includes(m))throw"Miqdor noto'g'ri";
@@ -78,8 +82,8 @@ const H={
     u.bal-=m;u.ff=ff;push(u,"-","Yechish · ID "+ff,m,{id,st:"wait"});
     const ok=TOKEN?(await tgApi("sendMessage",{chat_id:ADMIN,text:`So'rov #${n}\n\nFoydalanuvchi: ${u.name||"-"} (${u.id})\nFree Fire ID: ${ff}\nMiqdor: ${m} almaz\nDo'stlar: ${u.refs}`,
       reply_markup:{inline_keyboard:[[{text:"Tasdiqlash",callback_data:"wd:ok:"+id},{text:"Rad etish",callback_data:"wd:no:"+id}]]}})).ok:DEV;
-    if(!ok){delete db.wd[id];u.bal+=m;u.hist=u.hist.filter(h=>h.id!==id);throw"Server xatosi, keyinroq urining"}
-    save();return{s:pub(u)}}
+    if(!ok){delete db.wd[id];u.bal+=m;u.hist=u.hist.filter(h=>h.id!==id);dU.add(u.id);throw"Server xatosi, keyinroq urining"}
+    dU.add(u.id);dW.add(id);save();return{s:pub(u)}}
 };
 
 http.createServer(async(req,res)=>{
@@ -104,7 +108,7 @@ async function upd(x){
     if(q.from.id!==ADMIN)return ans("Ruxsat yo'q");
     const w=db.wd[id];if(!w||w.st!=="wait")return ans("Allaqachon hal qilingan");
     const ok=act==="ok",u=db.users[w.uid];w.st=ok?"ok":"no";
-    const h=u.hist.find(h=>h.id===id);if(h)h.st=w.st;
+    const h=u.hist.find(h=>h.id===id);if(h)h.st=w.st;dU.add(u.id);dW.add(id);
     if(!ok){u.bal+=w.amt;push(u,"+","Qaytarildi",w.amt)}save();
     await tgApi("editMessageText",{chat_id:q.message.chat.id,message_id:q.message.message_id,text:q.message.text+"\n\nHolat: "+(ok?"TASDIQLANDI":"RAD ETILDI")});
     await ans(ok?"Tasdiqlandi":"Rad etildi");

@@ -53,15 +53,16 @@ function auth(req){
   if(DEV&&req.headers["x-dev"])return{id:+req.headers["x-dev"],name:"Dev",sp:""};
   return null}
 function user(a,ref){let u=db.users[a.id],fresh=false;
-  if(!u){fresh=true;u=db.users[a.id]={id:a.id,bal:CFG.WELCOME,refs:0,streak:0,lastDay:0,spinAt:0,tasks:{},hist:[],ff:"",by:0};
+  if(!u){fresh=true;u=db.users[a.id]={id:a.id,bal:CFG.WELCOME,refs:0,streak:0,lastDay:0,spinAt:0,tasks:{},hist:[],ff:"",by:0,t:Date.now()};
     push(u,"+","Xush kelibsiz",CFG.WELCOME);
     const rid=+String(a.sp||ref||"").replace(/^ref_/,""),R=db.users[rid];
-    if(rid&&rid!==a.id&&R){u.by=rid;R.refs++;R.bal+=CFG.REF;push(R,"+","Do'st taklifi",CFG.REF)}}
+    if(rid&&rid!==a.id&&R){u.by=rid;R.refs++;R.bal+=CFG.REF;push(R,"+","Do'st taklifi",CFG.REF);if(TOKEN)tgApi("sendMessage",{chat_id:rid,text:"Yangi do'st qo'shildi: +"+CFG.REF+" almaz"})}}
+  if(u.ban&&a.id!==ADMIN)throw"Akkaunt bloklangan";
   u.name=a.name;return[u,fresh]}
 
 /* ===== API ===== */
 const H={
-  me:async(a,b)=>{const[u,fresh]=user(a,b.ref);save();return{cfg:pubCfg(),s:pub(u),fresh}},
+  me:async(a,b)=>{const[u]=user(a,b.ref),fresh=!u.seen;u.seen=1;dU.add(u.id);save();return{cfg:pubCfg(),s:pub(u),fresh,admin:a.id===ADMIN}},
   claim:async a=>{const[u]=user(a),d=day(Date.now());if(u.lastDay===d)throw"Bugun olingan";
     if(u.lastDay&&u.lastDay!==d-1)u.streak=0;const c=u.streak%7,v=CFG.DAYS[c];
     u.streak++;u.lastDay=d;u.bal+=v;push(u,"+","Kunlik bonus · "+(c+1)+"-kun",v);save();return{v,day:c+1,s:pub(u)}},
@@ -80,11 +81,28 @@ const H={
     if(Object.values(db.wd).some(w=>w.uid===u.id&&w.st==="wait"))throw"Oldingi so'rov kutilmoqda";
     const n=++db.n,id="w"+n;db.wd[id]={id,uid:u.id,ff,amt:m,st:"wait",time:Date.now()};
     u.bal-=m;u.ff=ff;push(u,"-","Yechish · ID "+ff,m,{id,st:"wait"});
-    const ok=TOKEN?(await tgApi("sendMessage",{chat_id:ADMIN,text:`So'rov #${n}\n\nFoydalanuvchi: ${u.name||"-"} (${u.id})\nFree Fire ID: ${ff}\nMiqdor: ${m} almaz\nDo'stlar: ${u.refs}`,
-      reply_markup:{inline_keyboard:[[{text:"Tasdiqlash",callback_data:"wd:ok:"+id},{text:"Rad etish",callback_data:"wd:no:"+id}]]}})).ok:DEV;
+    const sm=TOKEN?(await tgApi("sendMessage",{chat_id:ADMIN,text:`So'rov #${n}\n\nFoydalanuvchi: ${u.name||"-"} (${u.id})\nFree Fire ID: ${ff}\nMiqdor: ${m} almaz\nDo'stlar: ${u.refs}`,
+      reply_markup:{inline_keyboard:[[{text:"Tasdiqlash",callback_data:"wd:ok:"+id},{text:"Rad etish",callback_data:"wd:no:"+id}]]}})):{ok:DEV},ok=sm.ok;
     if(!ok){delete db.wd[id];u.bal+=m;u.hist=u.hist.filter(h=>h.id!==id);dU.add(u.id);throw"Server xatosi, keyinroq urining"}
-    dU.add(u.id);dW.add(id);save();return{s:pub(u)}}
+    if(sm.result)db.wd[id].mid=sm.result.message_id;dU.add(u.id);dW.add(id);save();return{s:pub(u)}},
+
+  /* ===== ADMIN ===== */
+  adm:async a=>{A(a);const us=Object.values(db.users),W=Object.values(db.wd),d1=Date.now()-864e5;
+    return{users:us.length,fresh:us.filter(u=>u.t>d1).length,banned:us.filter(u=>u.ban).length,bal:us.reduce((x,u)=>x+u.bal,0),paid:W.filter(w=>w.st==="ok").reduce((x,w)=>x+w.amt,0),
+      wd:W.filter(w=>w.st==="wait").map(w=>{const u=db.users[w.uid]||{};return{id:w.id,ff:w.ff,amt:w.amt,time:w.time,uid:w.uid,name:u.name||"",refs:u.refs||0}})}},
+  adm_wd:async(a,b)=>{A(a);const w=resolveWd(b.id,!!b.ok);if(w.mid&&TOKEN)tgApi("editMessageReplyMarkup",{chat_id:ADMIN,message_id:w.mid,reply_markup:{inline_keyboard:[]}});return{ok:1}},
+  adm_user:async(a,b)=>{A(a);const u=db.users[+b.id];if(!u)throw"Topilmadi";return{id:u.id,name:u.name,bal:u.bal,refs:u.refs,by:u.by,ban:!!u.ban,ff:u.ff}},
+  adm_give:async(a,b)=>{A(a);const u=db.users[+b.id],n=Math.trunc(+b.amount);if(!u||!n)throw"Noto'g'ri";if(u.bal+n<0)throw"Balans manfiy bo'ladi";
+    u.bal+=n;push(u,n>0?"+":"-","Admin",Math.abs(n));save();return{bal:u.bal}},
+  adm_ban:async(a,b)=>{A(a);const u=db.users[+b.id];if(!u)throw"Topilmadi";u.ban=b.on?1:0;dU.add(u.id);save();return{ban:!!u.ban}},
+  adm_cast:async(a,b)=>{A(a);const text=String(b.text||"").trim().slice(0,1000);if(!text)throw"Matn yo'q";const ids=Object.keys(db.users);
+    (async()=>{for(const id of ids){await tgApi("sendMessage",{chat_id:id,text});await new Promise(z=>setTimeout(z,50))}})();return{n:ids.length}}
 };
+const A=a=>{if(a.id!==ADMIN)throw"Ruxsat yo'q"};
+function resolveWd(id,ok){const w=db.wd[id];if(!w||w.st!=="wait")throw"Allaqachon hal qilingan";
+  const u=db.users[w.uid];w.st=ok?"ok":"no";const h=u.hist.find(h=>h.id===id);if(h)h.st=w.st;dU.add(u.id);dW.add(id);
+  if(!ok){u.bal+=w.amt;push(u,"+","Qaytarildi",w.amt)}save();
+  tgApi("sendMessage",{chat_id:u.id,text:ok?`So'rovingiz tasdiqlandi: ${w.amt} almaz (ID ${w.ff}).`:`So'rovingiz rad etildi, ${w.amt} almaz qaytarildi.`});return w}
 
 http.createServer(async(req,res)=>{
   const url=new URL(req.url,"http://x"),send=(c,o)=>{res.writeHead(c,{"Content-Type":"application/json"});res.end(JSON.stringify(o))};
@@ -106,16 +124,13 @@ async function upd(x){
   const q=x.callback_query;
   if(q){const[,act,id]=(q.data||"").split(":"),ans=text=>tgApi("answerCallbackQuery",{callback_query_id:q.id,text});
     if(q.from.id!==ADMIN)return ans("Ruxsat yo'q");
-    const w=db.wd[id];if(!w||w.st!=="wait")return ans("Allaqachon hal qilingan");
-    const ok=act==="ok",u=db.users[w.uid];w.st=ok?"ok":"no";
-    const h=u.hist.find(h=>h.id===id);if(h)h.st=w.st;dU.add(u.id);dW.add(id);
-    if(!ok){u.bal+=w.amt;push(u,"+","Qaytarildi",w.amt)}save();
-    await tgApi("editMessageText",{chat_id:q.message.chat.id,message_id:q.message.message_id,text:q.message.text+"\n\nHolat: "+(ok?"TASDIQLANDI":"RAD ETILDI")});
-    await ans(ok?"Tasdiqlandi":"Rad etildi");
-    return tgApi("sendMessage",{chat_id:u.id,text:ok?`So'rovingiz tasdiqlandi: ${w.amt} almaz (ID ${w.ff}).`:`So'rovingiz rad etildi, ${w.amt} almaz qaytarildi.`})}
+    try{resolveWd(id,act==="ok")}catch(e){return ans(String(e))}
+    await tgApi("editMessageText",{chat_id:q.message.chat.id,message_id:q.message.message_id,text:q.message.text+"\n\nHolat: "+(act==="ok"?"TASDIQLANDI":"RAD ETILDI")});
+    return ans(act==="ok"?"Tasdiqlandi":"Rad etildi")}
   const m=x.message;if(!m||!m.text)return;
   if(m.text.startsWith("/start")){const p=m.text.split(" ")[1]||"",url=BASE+(p.startsWith("ref_")?"?ref="+encodeURIComponent(p.slice(4)):"");
-    return tgApi("sendMessage",{chat_id:m.chat.id,text:"Free Almaz",...(BASE?{reply_markup:{inline_keyboard:[[{text:"Ochish",web_app:{url}}]]}}:{})})}
+    try{user({id:m.from.id,name:m.from.first_name||m.from.username||"",sp:p});save()}catch(e){return}
+    return tgApi("sendMessage",{chat_id:m.chat.id,text:"Free Almaz: bonus, g'ildirak, vazifalar va do'stlar uchun almaz yig'ing.",...(BASE?{reply_markup:{inline_keyboard:[[{text:"Ochish",web_app:{url}}]]}}:{})})}
   if(m.text==="/stat"&&m.from.id===ADMIN){const pend=Object.values(db.wd).filter(w=>w.st==="wait").length;
     return tgApi("sendMessage",{chat_id:m.chat.id,text:`Foydalanuvchilar: ${Object.keys(db.users).length}\nKutilayotgan so'rovlar: ${pend}`})}
 }

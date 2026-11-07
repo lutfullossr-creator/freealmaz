@@ -51,7 +51,7 @@ main{flex:1;overflow-y:auto;padding:8px 16px 22px;-webkit-overflow-scrolling:tou
 .stats4 .card{margin:0;text-align:center;padding:14px}.stats4 b{display:block;font-size:24px;color:var(--b);margin-top:2px}
 .rule{display:flex;align-items:center;gap:12px;margin-bottom:4px}.rule svg{width:40px;height:40px;flex:none}.rule b{font-size:20px}
 input,textarea{width:100%;background:#f4f7fd;border:1.5px solid transparent;border-radius:14px;color:var(--t);padding:14px;font:600 16px system-ui;margin:12px 0;outline:0;user-select:text;-webkit-user-select:text}
-textarea{min-height:90px;resize:none}input:focus,textarea:focus{border-color:var(--y);background:#fff}
+select{width:100%;background:#f4f7fd;border:1.5px solid transparent;border-radius:14px;color:var(--t);padding:14px;font:600 16px system-ui;margin:0 0 4px;outline:0}textarea{min-height:90px;resize:none}input:focus,textarea:focus{border-color:var(--y);background:#fff}
 .chips{display:flex;gap:8px;margin-bottom:14px}.chip{flex:1;text-align:center;padding:13px 0;border-radius:14px;background:#f4f7fd;border:1.5px solid transparent;font-weight:800}.chip.on{background:#fff8e6;border-color:var(--y);color:#c77700}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}.row:last-child{border:0;padding-bottom:0}.row:first-child{padding-top:0}
 .row span:last-child{font-weight:800;white-space:nowrap}.pl{color:#16a34a}.mn{color:#e0453a}
@@ -121,7 +121,7 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
 
 <section class="pg" id="p-friends">
   <div class="card">
-    <div class="rule"><svg><use href="#dm"/></svg><div><b>+22 almaz</b><div class="sm">har bir do'st uchun</div></div></div>
+    <div class="rule"><svg><use href="#dm"/></svg><div><b id="rb">+22 almaz</b><div class="sm" id="rs"></div></div></div>
     <div class="link" id="lk"></div>
     <button class="btn" id="share"><svg><use href="#i-send"/></svg>Do'stlarga yuborish</button>
     <div class="gap"></div>
@@ -129,6 +129,7 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
   </div>
   <div class="stats"><div class="card"><div class="lb">Do'stlar</div><b id="fc">0</b></div><div class="card"><div class="lb">Topilgan</div><b id="fe">0</b></div></div>
   <div class="card"><div class="req" style="margin-top:0"><div class="h"><span>Yechish uchun do'stlar</span><b id="fp"></b></div><div class="pb"><i id="fpb"></i></div></div></div>
+  <div class="card"><div class="lb" style="margin-bottom:12px">Taklif qilganlar</div><div id="fl"></div></div>
 </section>
 
 <section class="pg" id="p-wallet">
@@ -146,11 +147,15 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
 <section class="pg" id="p-admin">
   <div class="stats4" id="as"></div>
   <div class="card"><div class="lb" style="margin-bottom:12px">So'rovlar</div><div id="aw"></div></div>
-  <div class="card"><div class="lb" style="margin-bottom:12px">Vazifalar</div><div id="at"></div>
-    <input id="at_t" placeholder="Vazifa nomi"><input id="at_r" placeholder="Mukofot (almaz)">
-    <input id="at_u" placeholder="Havola (https://t.me/kanal)"><input id="at_f" placeholder="yoki do'stlar soni (masalan 5)">
-    <label class="chk"><input type="checkbox" id="at_c"> Kanal a'zoligini tekshirish</label>
+  <div class="card"><div class="lb" style="margin-bottom:6px">Vazifalar</div><div class="sm" id="at_n" style="margin-bottom:10px"></div><div id="at"></div>
+    <select id="at_k"><option value="pub">Ochiq kanal / guruh (obuna)</option><option value="priv">Yopiq kanal / guruh (so'rov yuborish)</option><option value="link">Oddiy havola</option><option value="ref">Do'stlar soni</option></select>
+    <input id="at_t" placeholder="Vazifa nomi"><input id="at_r" placeholder="Mukofot (almaz)"><input id="at_u" placeholder="https://t.me/kanal">
     <button class="btn" id="at_add">Qo'shish</button></div>
+  <div class="card"><div class="lb" style="margin-bottom:6px">Sozlamalar</div>
+    <input id="sc_REF" placeholder="Ref mukofoti"><input id="sc_MIN_REFS" placeholder="Yechish uchun do'stlar soni"><input id="sc_WELCOME" placeholder="Xush kelibsiz bonusi">
+    <input id="sc_MIN" placeholder="Yechish miqdorlari: 110,220,583"><input id="sc_DAYS" placeholder="Kunlik bonus (7 ta): 5,10,15,20,30,40,100">
+    <button class="btn" id="sc_save">Saqlash</button><div class="gap"></div><button class="btn o" id="sc_pause">Texnik ishlar</button></div>
+  <div class="card"><div class="lb" style="margin-bottom:12px">Hisobot</div><div id="ah"></div></div>
   <div class="card"><div class="lb">Foydalanuvchi</div>
     <input id="au_id" placeholder="Telegram ID">
     <button class="btn o" id="au_find">Topish</button>
@@ -176,7 +181,7 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
 
 <script>
 /* ===== SOZLAMALAR (server yuboradi; bu yerda faqat zaxira) ===== */
-const CFG={BOT:"",REF:22,MIN_REFS:15,MIN:[110,220,583],DAYS:[5,10,15,20,30,40,100],SPIN:[1,2,3,5,10,15,25,50],SPIN_CD:6*3600e3,WELCOME:10,TASKS:[]};
+const CFG={BOT:"",REF:22,MIN_REFS:15,MIN:[110,220,583],DAYS:[5,10,15,20,30,40,100],SPIN:[1,2,3,5,10,15,25,50],SPIN_CD:6*3600e3,WELCOME:10,REF_NEED:3,TASKS:[]};
 
 const tg=window.Telegram&&Telegram.WebApp;
 if(tg){tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor("#f3f6fd");tg.setBackgroundColor&&tg.setBackgroundColor("#f3f6fd")}
@@ -196,7 +201,7 @@ function setS(n){const r0=S.refs,wait=S.hist.filter(h=>h.st==="wait").map(h=>h.i
   if(ready){if(S.refs>r0)setTimeout(()=>popup((S.refs-r0)*CFG.REF,"Yangi do'st"),300);
     wait.forEach(id=>{const h=S.hist.find(x=>x.id===id);if(h&&h.st==="ok"){toast("So'rov tasdiqlandi");sWin()}else if(h&&h.st==="no"){toast("So'rov rad etildi");sErr()}})}
   ready=true}
-const refresh=()=>{if(!document.hidden&&!spinning&&!busy)api("me").then(j=>{CFG.TASKS=j.cfg.TASKS;setS(j.s);render()}).catch(()=>{})};
+const refresh=()=>{if(!document.hidden&&!spinning&&!busy)api("me").then(j=>{Object.assign(CFG,j.cfg);setS(j.s);render()}).catch(()=>{})};
 
 /* ===== OVOZ ===== */
 let AC;function tone(f,d=.12,t="square",v=.07,w=0){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+w;o.type=t;o.frequency.setValueAtTime(f,s);g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d)}catch(e){}}
@@ -220,11 +225,13 @@ function dState(){const t=dayN(now());if(S.lastDay===t)return{done:true,c:((S.st
 function tick(){const left=S.spinAt+CFG.SPIN_CD-now();$("spin").disabled=left>0||spinning;$("spinInfo").textContent=left>0?"Keyingi: "+fmt(left):"";if($("claim").disabled&&!dState().done)render()}
 
 function render(){
-  count();$("sndi").setAttribute("href",S.snd?"#i-on":"#i-off");const nm=(tu&&(tu.first_name||tu.username))||"o'yinchi";$("nm").textContent=nm;
+  if(sel>=CFG.MIN.length)sel=0;count();$("sndi").setAttribute("href",S.snd?"#i-on":"#i-off");const nm=(tu&&(tu.first_name||tu.username))||"o'yinchi";$("nm").textContent=nm;
   if($("av").dataset.d!==nm){$("av").dataset.d=nm;$("av").textContent=nm[0].toUpperCase();if(tu&&tu.photo_url){const im=new Image();im.onload=()=>{$("av").textContent="";$("av").appendChild(im)};im.src=tu.photo_url}}
   const d=dState();
   $("days").innerHTML=CFG.DAYS.map((v,i)=>`<div class="day ${i<d.c?"ok":""} ${i===d.c&&!d.done?"cur":""}">${i+1}<b>${v}</b></div>`).join("");
   $("claim").disabled=d.done;$("claim").textContent=d.done?"Ertaga qaytib keling":"Bonusni olish";
+  $("rb").textContent="+"+CFG.REF+" almaz";$("rs").textContent=CFG.REF_NEED?"do'st "+CFG.REF_NEED+" ta vazifa bajarsa":"do'st botga kirsa";
+  $("fl").innerHTML=(S.fl&&S.fl.length)?S.fl.map(f=>`<div class="row"><div class="tx">${esc(f.n||"Do'st")}</div><span class="pill ${f.d?"ok":"wait"}">${f.d?"+"+CFG.REF+" almaz":f.c+" / "+CFG.REF_NEED+" vazifa"}</span></div>`).join(""):'<div class="sm">Hozircha bo\'sh</div>';
   $("fp").textContent=Math.min(S.refs,CFG.MIN_REFS)+" / "+CFG.MIN_REFS;$("fpb").style.width=Math.min(100,S.refs/CFG.MIN_REFS*100)+"%";$("fc").textContent=S.refs;$("fe").textContent=S.refs*CFG.REF;$("lk").textContent=link();
   $("chips").innerHTML=CFG.MIN.map((m,i)=>`<div class="chip ${i===sel?"on":""}" data-i="${i}">${m}</div>`).join("");
   $$(".chip").forEach(c=>c.onclick=()=>{sel=+c.dataset.i;sClick();render()});
@@ -233,7 +240,7 @@ function render(){
   $("rq2").textContent=Math.min(S.refs,R)+" / "+R;$("pb2").style.width=Math.min(100,S.refs/R*100)+"%";
   $("wd").disabled=S.bal<m||S.refs<R;
   $("wdinfo").textContent=S.refs<R?"Yana "+(R-S.refs)+" do'st kerak":S.bal<m?"Yana "+(m-S.bal)+" almaz kerak":"";
-  $("tl").innerHTML=CFG.TASKS.map(k=>{const dn=S.tasks[k.id],bz=busyT[k.id],lk=k.ref&&S.refs<k.ref;return `<div class="row"><div class="ib"><svg><use href="#${k.ref?"i-users":k.share?"i-send":"i-link"}"/></svg></div><div class="tx">${esc(k.t)}<div class="sm" style="font-size:12px">+${k.r} almaz</div></div><button class="tb" data-t="${k.id}" ${dn||bz||lk?"disabled":""}>${dn?"Bajarildi":bz?"Kuting":lk?S.refs+" / "+k.ref:k.ref?"Olish":"Boshlash"}</button></div>`}).join("");
+  $("tl").innerHTML=CFG.TASKS.map(k=>{const dn=S.tasks[k.id],bz=busyT[k.id],lk=k.ref&&S.refs<k.ref;return `<div class="row"><div class="ib"><svg><use href="#${k.ref?"i-users":(k.share||k.cn)?"i-send":"i-link"}"/></svg></div><div class="tx">${esc(k.t)}<div class="sm" style="font-size:12px">+${k.r} almaz</div></div><button class="tb" data-t="${k.id}" ${dn||bz||lk?"disabled":""}>${dn?"Bajarildi":bz?"Kuting":lk?S.refs+" / "+k.ref:k.ref?"Olish":"Boshlash"}</button></div>`}).join("");
   $$(".tb").forEach(b=>b.onclick=()=>doTask(b.dataset.t));
   $("hist").innerHTML=S.hist.length?S.hist.slice(0,15).map(h=>`<div class="row"><div>${esc(h.txt)}<div class="sm" style="font-size:12px">${hm(h.time)}${h.st?`<span class="pill ${h.st}">${({wait:"Kutilmoqda",ok:"Tasdiqlandi",no:"Rad etildi"})[h.st]}</span>`:""}</div></div><span class="${h.t==="+"?"pl":"mn"}">${h.t}${h.amt}</span></div>`).join(""):'<div class="sm">Hozircha bo\'sh</div>';
   tick();
@@ -286,26 +293,37 @@ $("ffid").value=S.ff;$("ffid").oninput=e=>{S.ff=e.target.value;save()};
 /* ===== BOSHLASH ===== */
 document.addEventListener("visibilitychange",refresh);setInterval(refresh,15000);setInterval(()=>{if(!spinning)tick()},1000);
 /* ===== ADMIN ===== */
+const ask=m=>new Promise(z=>tg&&tg.showConfirm?tg.showConfirm(m,z):z(confirm(m)));
 const esc=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));let auid=0;
 async function admLoad(){try{const r=await api("adm");
   $("as").innerHTML=[["Foydalanuvchi",r.users],["Bugun yangi",r.fresh],["Kutilmoqda",r.wd.length],["To'langan",r.paid]].map(x=>`<div class="card"><div class="lb">${x[0]}</div><b>${x[1]}</b></div>`).join("");
   $("aw").innerHTML=r.wd.length?r.wd.map(w=>`<div class="req2"><div>${esc(w.name||"-")} <span class="sm">(${w.uid})</span><div class="sm">ID ${esc(w.ff)} · ${w.amt} almaz · do'st ${w.refs} · ${hm(w.time)}</div></div><div class="two"><button class="tb" data-a="1" data-i="${w.id}">Tasdiqlash</button><button class="tb no" data-a="0" data-i="${w.id}">Rad etish</button></div></div>`).join(""):'<div class="sm">So\'rov yo\'q</div>';
-  $("at").innerHTML=r.tasks.length?r.tasks.map(t=>`<div class="row"><div class="tx">${esc(t.t)}<div class="sm" style="font-size:12px">+${t.r} almaz · ${t.ref?t.ref+" do'st":t.chat?"kanal tekshiruvi":"havola"}</div></div><button class="tb no" data-d="${t.id}" style="min-width:0">O'chirish</button></div>`).join(""):'<div class="sm" style="margin-bottom:6px">Qo\'shilgan vazifa yo\'q</div>';
+  ["REF","MIN_REFS","WELCOME"].forEach(k=>{if(document.activeElement!==$("sc_"+k))$("sc_"+k).value=r.cfg[k]});$("sc_MIN").value=r.cfg.MIN.join(",");$("sc_DAYS").value=r.cfg.DAYS.join(",");
+  $("sc_pause").textContent="Texnik ishlar: "+(r.pause?"YOQILGAN":"o'chiq");$("sc_pause").dataset.on=r.pause?"1":"0";
+  const sec=(h,rows)=>`<div class="sm" style="margin:10px 0 4px"><b>${h}</b></div>`+(rows.length?rows.join(""):'<div class="sm">Yo\'q</div>');
+  $("ah").innerHTML=sec("Eng ko'p taklif qilganlar",r.top.filter(u=>u.refs>0).map(u=>`<div class="row"><div class="tx">${esc(u.n||"-")} <span class="sm">(${u.id})</span></div><span>${u.refs}</span></div>`))
+    +sec("Oxirgi so'rovlar",r.done.map(w=>`<div class="row"><div class="tx">${esc(w.n||"-")} <span class="sm">ID ${esc(w.ff)} · ${w.amt}</span></div><span class="pill ${w.st}">${w.st==="ok"?"Tasdiqlandi":"Rad etildi"}</span></div>`))
+    +sec("Admin harakatlari",r.log.map(l=>`<div class="row"><div class="tx" style="font-size:13px">${esc(l.x)}<div class="sm" style="font-size:11px">${hm(l.t)}</div></div></div>`));
+  $("at_n").textContent="Ref uchun hisoblanadigan kanal vazifalari: "+r.cnt+" / 3";$("at_n").style.color=r.cnt<3?"#e0453a":"";
+  $("at").innerHTML=r.tasks.length?r.tasks.map(t=>`<div class="row"><div class="tx">${esc(t.t)}<div class="sm" style="font-size:12px">+${t.r} almaz · ${t.ref?t.ref+" do'st":t.chat?(t.priv?"yopiq kanal":"ochiq kanal")+" · refga hisoblanadi":"havola"}</div></div><button class="tb no" data-d="${t.id}" style="min-width:0">O'chirish</button></div>`).join(""):'<div class="sm" style="margin-bottom:6px">Qo\'shilgan vazifa yo\'q</div>';
   $$("#at [data-d]").forEach(b=>b.onclick=()=>act(async()=>{await api("adm_task_del",{id:b.dataset.d});toast("O'chirildi");admLoad()}));
   $$("#aw [data-a]").forEach(b=>b.onclick=()=>act(async()=>{await api("adm_wd",{id:b.dataset.i,ok:b.dataset.a==="1"});toast(b.dataset.a==="1"?"Tasdiqlandi":"Rad etildi");sWin();admLoad()}))}
   catch(e){toast(e.message)}}
-$("at_add").onclick=()=>act(async()=>{await api("adm_task_add",{t:$("at_t").value,r:$("at_r").value,url:$("at_u").value,ref:$("at_f").value,check:$("at_c").checked});["at_t","at_r","at_u","at_f"].forEach(i=>$(i).value="");$("at_c").checked=false;toast("Qo'shildi");admLoad()});
+const PH={pub:"https://t.me/kanal",priv:"Kanal/guruh ID (-100...)",link:"https://...",ref:"Do'stlar soni (masalan 5)"};$("at_k").onchange=()=>{$("at_u").placeholder=PH[$("at_k").value]};
+$("at_add").onclick=()=>act(async()=>{await api("adm_task_add",{k:$("at_k").value,t:$("at_t").value,r:$("at_r").value,v:$("at_u").value});["at_t","at_r","at_u"].forEach(i=>$(i).value="");toast("Qo'shildi");admLoad()});
+$("sc_save").onclick=()=>act(async()=>{await api("adm_cfg",Object.fromEntries(["REF","MIN_REFS","WELCOME","MIN","DAYS"].map(k=>[k,$("sc_"+k).value])));toast("Saqlandi");admLoad()});
+$("sc_pause").onclick=()=>act(async()=>{if(!await ask("Holat o'zgartirilsinmi?"))return;await api("adm_pause",{on:$("sc_pause").dataset.on==="1"?0:1});admLoad()});
 const findUser=async()=>{const r=await api("adm_user",{id:$("au_id").value.trim()});auid=r.id;
-  $("au_info").innerHTML=`<b>${esc(r.name||"-")}</b> (${r.id})<br>Balans: ${r.bal} · Do'st: ${r.refs} · Taklif qilgan: ${r.by||"-"}<br>FF ID: ${esc(r.ff||"-")} · ${r.ban?"BLOKLANGAN":"faol"}`;
+  $("au_info").innerHTML=`<b>${esc(r.name||"-")}</b> (${r.id})<br>Balans: ${r.bal} · Do'st: ${r.refs} · Taklif qilgan: ${r.by||"-"}<br>FF ID: ${esc(r.ff||"-")} · ${r.ban?"BLOKLANGAN":"faol"}<br>${r.hist.map(h=>h.t+h.amt+" "+esc(h.txt)).join("<br>")}`;
   $("au_box").style.display="block";$("au_ban").textContent=r.ban?"Blokdan chiqarish":"Bloklash"};
 $("au_find").onclick=()=>act(findUser);
 $("au_give").onclick=()=>act(async()=>{const r=await api("adm_give",{id:auid,amount:$("au_amt").value});toast("Balans: "+r.bal);$("au_amt").value="";await findUser()});
 $("au_ban").onclick=()=>act(async()=>{const r=await api("adm_ban",{id:auid,on:$("au_ban").textContent==="Bloklash"});toast(r.ban?"Bloklandi":"Ochildi");await findUser()});
-$("ac_send").onclick=()=>act(async()=>{const t=$("ac_txt").value.trim();if(!t)return;const r=await api("adm_cast",{text:t});$("ac_txt").value="";toast(r.n+" kishiga yuborilmoqda")});
+$("ac_send").onclick=()=>act(async()=>{const t=$("ac_txt").value.trim();if(!t||!await ask("Hammaga yuborilsinmi?"))return;const r=await api("adm_cast",{text:t});$("ac_txt").value="";toast(r.n+" kishiga yuborilmoqda")});
 
 (async()=>{
   const ref=new URLSearchParams(location.search).get("ref")||"";let j=null,er="";
-  for(let i=0;i<20&&!j;i++){try{j=await api("me",{ref})}catch(e){er=e.message;if(/Telegram|bloklangan/.test(er))break;$("lt").textContent="Server uyg'onmoqda, kuting...";await new Promise(z=>setTimeout(z,3000))}}
+  for(let i=0;i<20&&!j;i++){try{j=await api("me",{ref})}catch(e){er=e.message;if(/Telegram|bloklangan|Texnik/.test(er))break;$("lt").textContent="Server uyg'onmoqda, kuting...";await new Promise(z=>setTimeout(z,3000))}}
   if(!j){$("lt").textContent=er||"Aloqa yo'q";$$("#ld .sp").forEach(x=>x.style.display="none");return}
   Object.assign(CFG,j.cfg);setS(j.s);buildWheel();
   if(j.admin){$("navAdm").style.display=""}

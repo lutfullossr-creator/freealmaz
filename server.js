@@ -16,27 +16,28 @@ const CFG={REF:22,MIN_REFS:15,MIN:[110,220,583],DAYS:[5,10,15,20,30,40,100],SPIN
     {id:"r10",t:"10 ta do'st taklif qiling",r:50,ref:10}]};
 
 /* ===== BAZA: Upstash Redis (hostda) yoki db.json (lokal) ===== */
-const DBF=path.join(__dirname,"db.json");let db={users:{},wd:{},n:0},st;const dU=new Set(),dW=new Set();
+const DBF=path.join(__dirname,"db.json");let db={users:{},wd:{},n:0,tasks:[],tn:0},st,dT=false;const dU=new Set(),dW=new Set();
 const up=async(c,p="")=>{const r=await fetch(UP+p,{method:"POST",headers:{Authorization:"Bearer "+UT,"Content-Type":"application/json"},body:JSON.stringify(c)});if(!r.ok)throw new Error("Upstash "+r.status);return r.json()};
 const hall=async k=>{const a=(await up(["HGETALL",k])).result||[],o={};for(let i=0;i<a.length;i+=2)o[a[i]]=JSON.parse(a[i+1]);return o};
 async function load(){
-  try{if(UP){db.users=await hall("fa:u");db.wd=await hall("fa:w");db.n=+((await up(["GET","fa:n"])).result||0)}else db=JSON.parse(fs.readFileSync(DBF,"utf8"))}
+  try{if(UP){db.users=await hall("fa:u");db.wd=await hall("fa:w");db.n=+((await up(["GET","fa:n"])).result||0);const tk=(await up(["GET","fa:tasks"])).result;if(tk){const o=JSON.parse(tk);db.tasks=o.list||[];db.tn=o.n||0}}else db=JSON.parse(fs.readFileSync(DBF,"utf8"))}
   catch(e){if(UP){console.error("Baza yuklanmadi:",e.message);process.exit(1)}}
-  db.users=db.users||{};db.wd=db.wd||{};db.n=db.n||0;
+  db.users=db.users||{};db.wd=db.wd||{};db.n=db.n||0;db.tasks=db.tasks||[];db.tn=db.tn||0;
   for(const u of Object.values(db.users)){u.tasks=u.tasks||{};u.hist=u.hist||[]}}
 async function persist(){
   if(!UP){try{fs.writeFile(DBF+".tmp",JSON.stringify(db),()=>fs.rename(DBF+".tmp",DBF,()=>{}))}catch(e){console.error("Saqlanmadi:",e.message)}return}
-  const U=[...dU],W=[...dW];dU.clear();dW.clear();
-  try{const c=[["SET","fa:n",String(db.n)]];
+  const U=[...dU],W=[...dW],hT=dT;dU.clear();dW.clear();dT=false;
+  try{const c=[["SET","fa:n",String(db.n)]];if(hT)c.push(["SET","fa:tasks",JSON.stringify({n:db.tn,list:db.tasks})]);
     U.forEach(id=>db.users[id]&&c.push(["HSET","fa:u",String(id),JSON.stringify(db.users[id])]));
     W.forEach(id=>db.wd[id]&&c.push(["HSET","fa:w",id,JSON.stringify(db.wd[id])]));
     const rs=await up(c,"/pipeline"),bad=rs.find(x=>x.error);if(bad)throw new Error(bad.error)}
-  catch(e){console.error("Saqlanmadi:",e.message);U.forEach(x=>dU.add(x));W.forEach(x=>dW.add(x));setTimeout(save,5000)}}
+  catch(e){console.error("Saqlanmadi:",e.message);U.forEach(x=>dU.add(x));W.forEach(x=>dW.add(x));if(hT)dT=true;setTimeout(save,5000)}}
 const save=()=>{clearTimeout(st);st=setTimeout(persist,1000)};
 const day=t=>Math.floor((t+5*36e5)/864e5); // UTC+5
 const push=(u,t,txt,amt,x)=>{dU.add(u.id);u.hist.unshift({t,txt,amt,time:Date.now(),...x});u.hist.length=Math.min(u.hist.length,30)};
 const pub=u=>({id:u.id,bal:u.bal,refs:u.refs,streak:u.streak,lastDay:u.lastDay,spinAt:u.spinAt,tasks:u.tasks,hist:u.hist,now:Date.now()});
-const pubCfg=()=>{const{W,TASKS,...r}=CFG;return{...r,BOT,TASKS:TASKS.map(({chat,...k})=>k)}};
+const allTasks=()=>[...CFG.TASKS,...db.tasks];
+const pubCfg=()=>{const{W,TASKS:_,...r}=CFG;return{...r,BOT,TASKS:allTasks().map(({chat,...k})=>k)}};
 
 /* ===== TELEGRAM ===== */
 const tgApi=async(m,b)=>{try{const r=await fetch(`https://api.telegram.org/bot${TOKEN}/${m}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});return await r.json()}catch(e){return{ok:false}}};
@@ -69,7 +70,7 @@ const H={
   spin:async a=>{const[u]=user(a);if(Date.now()<u.spinAt+CFG.SPIN_CD)throw"Hali erta";
     let r=crypto.randomInt(100),i=0;for(;i<7;i++){if((r-=CFG.W[i])<0)break}
     const v=CFG.SPIN[i];u.spinAt=Date.now();u.bal+=v;push(u,"+","G'ildirak",v);save();return{i,v,s:pub(u)}},
-  task:async(a,b)=>{const[u]=user(a),k=CFG.TASKS.find(x=>x.id===b.id);if(!k)throw"Vazifa yo'q";if(u.tasks[k.id])throw"Bajarilgan";
+  task:async(a,b)=>{const[u]=user(a),k=allTasks().find(x=>x.id===b.id);if(!k)throw"Vazifa yo'q";if(u.tasks[k.id])throw"Bajarilgan";
     if(k.ref&&u.refs<k.ref)throw u.refs+" / "+k.ref+" do'st";
     u.tasks[k.id]=1;
     if(k.chat){const r=await tgApi("getChatMember",{chat_id:k.chat,user_id:u.id});
@@ -88,7 +89,7 @@ const H={
 
   /* ===== ADMIN ===== */
   adm:async a=>{A(a);const us=Object.values(db.users),W=Object.values(db.wd),d1=Date.now()-864e5;
-    return{users:us.length,fresh:us.filter(u=>u.t>d1).length,banned:us.filter(u=>u.ban).length,bal:us.reduce((x,u)=>x+u.bal,0),paid:W.filter(w=>w.st==="ok").reduce((x,w)=>x+w.amt,0),
+    return{tasks:db.tasks,users:us.length,fresh:us.filter(u=>u.t>d1).length,banned:us.filter(u=>u.ban).length,bal:us.reduce((x,u)=>x+u.bal,0),paid:W.filter(w=>w.st==="ok").reduce((x,w)=>x+w.amt,0),
       wd:W.filter(w=>w.st==="wait").map(w=>{const u=db.users[w.uid]||{};return{id:w.id,ff:w.ff,amt:w.amt,time:w.time,uid:w.uid,name:u.name||"",refs:u.refs||0}})}},
   adm_wd:async(a,b)=>{A(a);const w=resolveWd(b.id,!!b.ok);if(w.mid&&TOKEN)tgApi("editMessageReplyMarkup",{chat_id:ADMIN,message_id:w.mid,reply_markup:{inline_keyboard:[]}});return{ok:1}},
   adm_user:async(a,b)=>{A(a);const u=db.users[+b.id];if(!u)throw"Topilmadi";return{id:u.id,name:u.name,bal:u.bal,refs:u.refs,by:u.by,ban:!!u.ban,ff:u.ff}},
@@ -96,7 +97,13 @@ const H={
     u.bal+=n;push(u,n>0?"+":"-","Admin",Math.abs(n));save();return{bal:u.bal}},
   adm_ban:async(a,b)=>{A(a);const u=db.users[+b.id];if(!u)throw"Topilmadi";u.ban=b.on?1:0;dU.add(u.id);save();return{ban:!!u.ban}},
   adm_cast:async(a,b)=>{A(a);const text=String(b.text||"").trim().slice(0,1000);if(!text)throw"Matn yo'q";const ids=Object.keys(db.users);
-    (async()=>{for(const id of ids){await tgApi("sendMessage",{chat_id:id,text});await new Promise(z=>setTimeout(z,50))}})();return{n:ids.length}}
+    (async()=>{for(const id of ids){await tgApi("sendMessage",{chat_id:id,text});await new Promise(z=>setTimeout(z,50))}})();return{n:ids.length}},
+  adm_task_add:async(a,b)=>{A(a);const t=String(b.t||"").trim().slice(0,60),r=Math.trunc(+b.r),ref=Math.trunc(+b.ref)||0,url=String(b.url||"").trim();
+    if(!t||!(r>0&&r<=1000))throw"Nom va mukofot (1-1000) kerak";const k={id:"t"+(++db.tn),t,r};
+    if(ref>0)k.ref=Math.min(ref,1000);else{if(!/^https:\/\/\S+$/.test(url))throw"Havola https:// bilan boshlansin";k.url=url;
+      if(b.check){const m=url.match(/^https:\/\/t\.me\/([A-Za-z0-9_]{5,})\/?$/);if(!m)throw"Kanal havolasi: https://t.me/kanal";k.chat="@"+m[1]}}
+    db.tasks.push(k);dT=true;save();return{ok:1}},
+  adm_task_del:async(a,b)=>{A(a);db.tasks=db.tasks.filter(x=>x.id!==b.id);dT=true;save();return{ok:1}}
 };
 const A=a=>{if(a.id!==ADMIN)throw"Ruxsat yo'q"};
 function resolveWd(id,ok){const w=db.wd[id];if(!w||w.st!=="wait")throw"Allaqachon hal qilingan";

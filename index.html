@@ -60,6 +60,9 @@ textarea{min-height:90px;resize:none}input:focus,textarea:focus{border-color:var
 .tb{border:0;border-radius:12px;background:linear-gradient(180deg,#ffd13d,#ff9f1a);color:#3d2400;font:800 13px system-ui,sans-serif;padding:10px 14px;min-width:98px;transition:transform .1s}.tb:active{transform:scale(.96)}.tb:disabled{background:#e9eef7;color:#a2abc0}
 .tb.no{background:#fff;color:#e0453a;border:1px solid #f3c6c2}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.two .tb{min-width:0}
+.ib{width:40px;height:40px;border-radius:13px;background:#eef2ff;color:var(--b);display:grid;place-items:center;flex:none}.ib svg{width:20px;height:20px}.tx{flex:1;min-width:0}
+.pill{display:inline-block;margin-left:6px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:800}.pill.wait{background:#fff4d6;color:#b57600}.pill.ok{background:#dcf7e6;color:#16a34a}.pill.no{background:#fde4e2;color:#e0453a}
+input[type=checkbox]{width:20px;height:20px;margin:0;padding:0;accent-color:var(--b);flex:none}.chk{display:flex;align-items:center;gap:10px;font-size:14px;margin:4px 0 14px;color:var(--m)}
 .req2{padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}.req2:last-child{border:0}
 nav{display:flex;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -8px 24px rgba(50,70,130,.1);padding:4px 6px calc(4px + env(safe-area-inset-bottom))}
 nav button{flex:1;background:0;border:0;color:#9aa4ba;padding:9px 0 7px;font:700 11px system-ui;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .2s}
@@ -70,6 +73,7 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
 @keyframes zoom{from{transform:scale(.8);opacity:0}}
 .pop .big{font-size:56px;margin:8px 0 20px;color:#ff9a1a}.pop p:empty{display:none}.pop p{margin:-10px 0 20px}
 #ld{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:var(--m);font-size:14px;text-align:center;padding:20px}
+.hd{display:flex;align-items:center;gap:12px}.av{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#3b6cff,#7a4dff);color:#fff;display:grid;place-items:center;font-size:20px;font-weight:900;overflow:hidden;flex:none;box-shadow:0 8px 16px rgba(80,90,255,.3)}.av img{width:100%;height:100%;object-fit:cover}
 .ldm{width:64px;height:64px;animation:fl 2s ease-in-out infinite}
 .sp{width:36px;height:36px;border-radius:50%;border:4px solid #dbe3f5;border-top-color:var(--b);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -85,6 +89,7 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
 <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 6h16v3h2v10H3zm0-2h14v1H3z" fill="currentColor"/><circle cx="17" cy="14" r="1.6" fill="#fff"/></symbol>
 <symbol id="i-task" viewBox="0 0 24 24"><path d="M5 3h14v18H5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 9l1.8 1.8L14 7.5M8.5 16h7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.4 9-8 11-4.6-2-8-6-8-11V5z" fill="currentColor"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
 <symbol id="i-copy" viewBox="0 0 24 24"><path d="M8 3h12v14H8zM4 7h2v14h12v2H4z" fill="currentColor"/></symbol>
 <symbol id="i-send" viewBox="0 0 24 24"><path d="M2 12L22 3l-4 18-6-5-3 4v-6l9-8-11 7z" fill="currentColor"/></symbol>
 <symbol id="i-on" viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3zM16 8a5 5 0 010 8M18.5 5a9 9 0 010 14" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
@@ -92,7 +97,7 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
 </defs></svg>
 
 <div id="app">
-<header><div class="who"><span>Salom</span><b id="nm"></b></div><button class="ic" id="snd" aria-label="Ovoz"><svg><use id="sndi" href="#i-on"/></svg></button></header>
+<header><div class="hd"><div class="av" id="av"></div><div class="who"><span>Salom</span><b id="nm"></b></div></div><button class="ic" id="snd" aria-label="Ovoz"><svg><use id="sndi" href="#i-on"/></svg></button></header>
 <main>
 <section class="pg on" id="p-home">
   <div class="card hero"><svg class="fl f1"><use href="#dm"/></svg><svg class="fl f2"><use href="#dm"/></svg><svg class="fl f3"><use href="#dm"/></svg><div class="lb">Balans</div><div class="big"><svg><use href="#dm"/></svg><span id="bal">0</span></div></div>
@@ -123,6 +128,7 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
     <button class="btn o" id="copy"><svg><use href="#i-copy"/></svg>Havolani nusxalash</button>
   </div>
   <div class="stats"><div class="card"><div class="lb">Do'stlar</div><b id="fc">0</b></div><div class="card"><div class="lb">Topilgan</div><b id="fe">0</b></div></div>
+  <div class="card"><div class="req" style="margin-top:0"><div class="h"><span>Yechish uchun do'stlar</span><b id="fp"></b></div><div class="pb"><i id="fpb"></i></div></div></div>
 </section>
 
 <section class="pg" id="p-wallet">
@@ -140,6 +146,11 @@ nav button svg{width:24px;height:24px;transition:transform .2s}nav button.on{col
 <section class="pg" id="p-admin">
   <div class="stats4" id="as"></div>
   <div class="card"><div class="lb" style="margin-bottom:12px">So'rovlar</div><div id="aw"></div></div>
+  <div class="card"><div class="lb" style="margin-bottom:12px">Vazifalar</div><div id="at"></div>
+    <input id="at_t" placeholder="Vazifa nomi"><input id="at_r" placeholder="Mukofot (almaz)">
+    <input id="at_u" placeholder="Havola (https://t.me/kanal)"><input id="at_f" placeholder="yoki do'stlar soni (masalan 5)">
+    <label class="chk"><input type="checkbox" id="at_c"> Kanal a'zoligini tekshirish</label>
+    <button class="btn" id="at_add">Qo'shish</button></div>
   <div class="card"><div class="lb">Foydalanuvchi</div>
     <input id="au_id" placeholder="Telegram ID">
     <button class="btn o" id="au_find">Topish</button>
@@ -185,7 +196,7 @@ function setS(n){const r0=S.refs,wait=S.hist.filter(h=>h.st==="wait").map(h=>h.i
   if(ready){if(S.refs>r0)setTimeout(()=>popup((S.refs-r0)*CFG.REF,"Yangi do'st"),300);
     wait.forEach(id=>{const h=S.hist.find(x=>x.id===id);if(h&&h.st==="ok"){toast("So'rov tasdiqlandi");sWin()}else if(h&&h.st==="no"){toast("So'rov rad etildi");sErr()}})}
   ready=true}
-const refresh=()=>{if(!document.hidden&&!spinning&&!busy)api("me").then(j=>{setS(j.s);render()}).catch(()=>{})};
+const refresh=()=>{if(!document.hidden&&!spinning&&!busy)api("me").then(j=>{CFG.TASKS=j.cfg.TASKS;setS(j.s);render()}).catch(()=>{})};
 
 /* ===== OVOZ ===== */
 let AC;function tone(f,d=.12,t="square",v=.07,w=0){if(!S.snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+w;o.type=t;o.frequency.setValueAtTime(f,s);g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d)}catch(e){}}
@@ -209,11 +220,12 @@ function dState(){const t=dayN(now());if(S.lastDay===t)return{done:true,c:((S.st
 function tick(){const left=S.spinAt+CFG.SPIN_CD-now();$("spin").disabled=left>0||spinning;$("spinInfo").textContent=left>0?"Keyingi: "+fmt(left):"";if($("claim").disabled&&!dState().done)render()}
 
 function render(){
-  count();$("sndi").setAttribute("href",S.snd?"#i-on":"#i-off");$("nm").textContent=(tu&&(tu.first_name||tu.username))||"o'yinchi";
+  count();$("sndi").setAttribute("href",S.snd?"#i-on":"#i-off");const nm=(tu&&(tu.first_name||tu.username))||"o'yinchi";$("nm").textContent=nm;
+  if($("av").dataset.d!==nm){$("av").dataset.d=nm;$("av").textContent=nm[0].toUpperCase();if(tu&&tu.photo_url){const im=new Image();im.onload=()=>{$("av").textContent="";$("av").appendChild(im)};im.src=tu.photo_url}}
   const d=dState();
   $("days").innerHTML=CFG.DAYS.map((v,i)=>`<div class="day ${i<d.c?"ok":""} ${i===d.c&&!d.done?"cur":""}">${i+1}<b>${v}</b></div>`).join("");
   $("claim").disabled=d.done;$("claim").textContent=d.done?"Ertaga qaytib keling":"Bonusni olish";
-  $("fc").textContent=S.refs;$("fe").textContent=S.refs*CFG.REF;$("lk").textContent=link();
+  $("fp").textContent=Math.min(S.refs,CFG.MIN_REFS)+" / "+CFG.MIN_REFS;$("fpb").style.width=Math.min(100,S.refs/CFG.MIN_REFS*100)+"%";$("fc").textContent=S.refs;$("fe").textContent=S.refs*CFG.REF;$("lk").textContent=link();
   $("chips").innerHTML=CFG.MIN.map((m,i)=>`<div class="chip ${i===sel?"on":""}" data-i="${i}">${m}</div>`).join("");
   $$(".chip").forEach(c=>c.onclick=()=>{sel=+c.dataset.i;sClick();render()});
   const m=CFG.MIN[sel],R=CFG.MIN_REFS;
@@ -221,9 +233,9 @@ function render(){
   $("rq2").textContent=Math.min(S.refs,R)+" / "+R;$("pb2").style.width=Math.min(100,S.refs/R*100)+"%";
   $("wd").disabled=S.bal<m||S.refs<R;
   $("wdinfo").textContent=S.refs<R?"Yana "+(R-S.refs)+" do'st kerak":S.bal<m?"Yana "+(m-S.bal)+" almaz kerak":"";
-  $("tl").innerHTML=CFG.TASKS.map(k=>{const dn=S.tasks[k.id],bz=busyT[k.id],lk=k.ref&&S.refs<k.ref;return `<div class="row"><div>${k.t}<div class="sm" style="font-size:12px">+${k.r} almaz</div></div><button class="tb" data-t="${k.id}" ${dn||bz||lk?"disabled":""}>${dn?"Bajarildi":bz?"Kuting":lk?S.refs+" / "+k.ref:k.ref?"Olish":"Boshlash"}</button></div>`}).join("");
+  $("tl").innerHTML=CFG.TASKS.map(k=>{const dn=S.tasks[k.id],bz=busyT[k.id],lk=k.ref&&S.refs<k.ref;return `<div class="row"><div class="ib"><svg><use href="#${k.ref?"i-users":k.share?"i-send":"i-link"}"/></svg></div><div class="tx">${esc(k.t)}<div class="sm" style="font-size:12px">+${k.r} almaz</div></div><button class="tb" data-t="${k.id}" ${dn||bz||lk?"disabled":""}>${dn?"Bajarildi":bz?"Kuting":lk?S.refs+" / "+k.ref:k.ref?"Olish":"Boshlash"}</button></div>`}).join("");
   $$(".tb").forEach(b=>b.onclick=()=>doTask(b.dataset.t));
-  $("hist").innerHTML=S.hist.length?S.hist.slice(0,15).map(h=>`<div class="row"><div>${h.txt}<div class="sm" style="font-size:12px">${hm(h.time)}${h.st?" · "+({wait:"Kutilmoqda",ok:"Tasdiqlandi",no:"Rad etildi"})[h.st]:""}</div></div><span class="${h.t==="+"?"pl":"mn"}">${h.t}${h.amt}</span></div>`).join(""):'<div class="sm">Hozircha bo\'sh</div>';
+  $("hist").innerHTML=S.hist.length?S.hist.slice(0,15).map(h=>`<div class="row"><div>${esc(h.txt)}<div class="sm" style="font-size:12px">${hm(h.time)}${h.st?`<span class="pill ${h.st}">${({wait:"Kutilmoqda",ok:"Tasdiqlandi",no:"Rad etildi"})[h.st]}</span>`:""}</div></div><span class="${h.t==="+"?"pl":"mn"}">${h.t}${h.amt}</span></div>`).join(""):'<div class="sm">Hozircha bo\'sh</div>';
   tick();
 }
 function go(p,q){$$(".pg").forEach(e=>e.classList.toggle("on",e.id==="p-"+p));$$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.go===p));S.tab=p;save();document.querySelector("main").scrollTop=0;if(!q)sClick();render();if(p==="admin")admLoad()}
@@ -254,7 +266,7 @@ function doTask(id){const k=CFG.TASKS.find(x=>x.id===id);if(!k||S.tasks[id]||bus
   if(k.ref&&S.refs<k.ref){sErr();return toast(S.refs+" / "+k.ref+" do'st")}
   busyT[id]=1;
   const fin=async()=>{try{const r=await api("task",{id});setS(r.s);popup(r.v,"Vazifa bajarildi")}catch(e){sErr();toast(e.message)}delete busyT[id];render()};
-  if(k.url){tg?tg.openTelegramLink(k.url):window.open(k.url,"_blank");render();setTimeout(fin,5000)}
+  if(k.url){/^https:\/\/t\.me\//.test(k.url)&&tg?tg.openTelegramLink(k.url):tg&&tg.openLink?tg.openLink(k.url):window.open(k.url,"_blank");render();setTimeout(fin,5000)}
   else if(k.share){shareIt();render();setTimeout(fin,3000)}
   else{render();fin()}}
 
@@ -278,8 +290,11 @@ const esc=x=>String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 async function admLoad(){try{const r=await api("adm");
   $("as").innerHTML=[["Foydalanuvchi",r.users],["Bugun yangi",r.fresh],["Kutilmoqda",r.wd.length],["To'langan",r.paid]].map(x=>`<div class="card"><div class="lb">${x[0]}</div><b>${x[1]}</b></div>`).join("");
   $("aw").innerHTML=r.wd.length?r.wd.map(w=>`<div class="req2"><div>${esc(w.name||"-")} <span class="sm">(${w.uid})</span><div class="sm">ID ${esc(w.ff)} · ${w.amt} almaz · do'st ${w.refs} · ${hm(w.time)}</div></div><div class="two"><button class="tb" data-a="1" data-i="${w.id}">Tasdiqlash</button><button class="tb no" data-a="0" data-i="${w.id}">Rad etish</button></div></div>`).join(""):'<div class="sm">So\'rov yo\'q</div>';
+  $("at").innerHTML=r.tasks.length?r.tasks.map(t=>`<div class="row"><div class="tx">${esc(t.t)}<div class="sm" style="font-size:12px">+${t.r} almaz · ${t.ref?t.ref+" do'st":t.chat?"kanal tekshiruvi":"havola"}</div></div><button class="tb no" data-d="${t.id}" style="min-width:0">O'chirish</button></div>`).join(""):'<div class="sm" style="margin-bottom:6px">Qo\'shilgan vazifa yo\'q</div>';
+  $$("#at [data-d]").forEach(b=>b.onclick=()=>act(async()=>{await api("adm_task_del",{id:b.dataset.d});toast("O'chirildi");admLoad()}));
   $$("#aw [data-a]").forEach(b=>b.onclick=()=>act(async()=>{await api("adm_wd",{id:b.dataset.i,ok:b.dataset.a==="1"});toast(b.dataset.a==="1"?"Tasdiqlandi":"Rad etildi");sWin();admLoad()}))}
   catch(e){toast(e.message)}}
+$("at_add").onclick=()=>act(async()=>{await api("adm_task_add",{t:$("at_t").value,r:$("at_r").value,url:$("at_u").value,ref:$("at_f").value,check:$("at_c").checked});["at_t","at_r","at_u","at_f"].forEach(i=>$(i).value="");$("at_c").checked=false;toast("Qo'shildi");admLoad()});
 const findUser=async()=>{const r=await api("adm_user",{id:$("au_id").value.trim()});auid=r.id;
   $("au_info").innerHTML=`<b>${esc(r.name||"-")}</b> (${r.id})<br>Balans: ${r.bal} · Do'st: ${r.refs} · Taklif qilgan: ${r.by||"-"}<br>FF ID: ${esc(r.ff||"-")} · ${r.ban?"BLOKLANGAN":"faol"}`;
   $("au_box").style.display="block";$("au_ban").textContent=r.ban?"Blokdan chiqarish":"Bloklash"};
